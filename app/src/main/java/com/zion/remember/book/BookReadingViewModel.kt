@@ -1,22 +1,18 @@
 package com.zion.remember.book
 
-import android.net.Uri
 import android.text.TextPaint
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.zion.remember.util.LogUtil
 import com.zion.remember.util.MobileUtil
 import com.zion.remember.vo.ChapterPageVo
 import com.zion.remember.vo.ChapterVo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.*
-import java.net.URI
 import java.nio.charset.Charset
 import java.util.regex.Pattern
+import kotlin.coroutines.Continuation
 
 class BookReadingViewModel() : ViewModel() {
     private val CHAPTER_PATTERNS = arrayOf(
@@ -28,11 +24,11 @@ class BookReadingViewModel() : ViewModel() {
     )
     private val BUFFER_SIZE = 512 * 1024
     private var mChapterPattern: Pattern? = null
-     var chapterList = ArrayList<ChapterVo>()
+    var chapterList = ArrayList<ChapterVo>()//当前book的所有章节
     private var mBookFile: File? = null
 
 
-    //将File转换成BookVo 章节 段落
+    //将book分成章节
     fun parseBook(path: String?) {
         if (path.isNullOrBlank()) return
         chapterList.clear()
@@ -132,6 +128,7 @@ class BookReadingViewModel() : ViewModel() {
         }
 
         bookStream.close()
+
     }
 
     private fun hasChapter(bookStream: RandomAccessFile): Boolean {
@@ -156,8 +153,11 @@ class BookReadingViewModel() : ViewModel() {
     var data = MutableLiveData<List<ChapterPageVo>>()
     var currentPos = 0
     var currentPagePos = 0
-    var mFontSize: Float = MobileUtil.sp2px(16f)
+    private var mFontSize: Float = MobileUtil.sp2px(16f)
     private val showChapterList = mutableListOf<ChapterPageVo>()
+    private var currentChapterList = mutableListOf<ChapterPageVo>()
+    private var preChapterList = mutableListOf<ChapterPageVo>()
+    private var nextChapterList = mutableListOf<ChapterPageVo>()
     var mPageWidth = 0
     var mPageHeight = 0
     fun refreshChapter(fontSize: Float, pageWidth: Int, pageHeight: Int) {
@@ -167,21 +167,37 @@ class BookReadingViewModel() : ViewModel() {
         openChapter(currentPos, currentPagePos)
     }
 
-     fun openChapter(
+    //初始化章节
+    private fun initChapterList(posChapter: Int): MutableList<ChapterPageVo> {
+
+        currentChapterList.clear()
+        preChapterList.clear()
+        nextChapterList.clear()
+
+        currentChapterList = getChapterPages(chapterList[posChapter])
+        if (posChapter > 0) preChapterList = getChapterPages(chapterList[posChapter - 1])
+        if (posChapter < chapterList.size - 1) nextChapterList =
+            getChapterPages(chapterList[posChapter + 1])
+
+        return currentChapterList
+
+    }
+
+    fun openChapter(
         position: Int,
         pagePos: Int,
     ) {
-        if (chapterList.isEmpty()) {
-            return
-        }
         currentPos = position
         currentPagePos = pagePos
         CoroutineScope(Dispatchers.Default).launch {
 
-            var posChapterPages = getChapterPages(chapterList[currentPos])
+            currentChapterList =
+                async {
+                    initChapterList(position)
+                }.await()
 
-            if (currentPagePos > posChapterPages.size - 1) {
-                currentPagePos = posChapterPages.size - 1
+            if (currentPagePos > currentChapterList.size - 1) {
+                currentPagePos = currentChapterList.size - 1
             }
 
             showChapterList.clear()
@@ -189,29 +205,31 @@ class BookReadingViewModel() : ViewModel() {
                 if (currentPos == 0) {
                     showChapterList.add(ChapterPageVo("", 0, mutableListOf(), 0))
                 } else {
-                    val preChapterPage = getChapterPages(chapterList[currentPos - 1])
-                    showChapterList.add(preChapterPage[preChapterPage.size - 1])
+
+                    showChapterList.add(preChapterList[preChapterList.size - 1])
                 }
             } else {
-                showChapterList.add(posChapterPages[currentPagePos - 1])
+                showChapterList.add(currentChapterList[currentPagePos - 1])
             }
-            showChapterList.add(posChapterPages[currentPagePos])//当前页的数据
+            showChapterList.add(currentChapterList[currentPagePos])//当前页的数据
 
-            if (currentPagePos + 1 > posChapterPages.size - 1) {
+            if (currentPagePos + 1 > currentChapterList.size - 1) {
                 var position = currentPos + 1
                 if (position > chapterList.size - 1) {
                     showChapterList.add(ChapterPageVo("", 0, mutableListOf(), 0))
                 } else {
                     showChapterList.add(
-                        getChapterPages(chapterList[position])[0]
+                        nextChapterList[0]
                     )
+
                 }
             } else {
-                showChapterList.add(posChapterPages[currentPagePos + 1])
+                showChapterList.add(currentChapterList[currentPagePos + 1])
             }
 
             data.postValue(showChapterList)
         }
+
 
     }
 
@@ -219,36 +237,49 @@ class BookReadingViewModel() : ViewModel() {
         if (chapterList.isEmpty() || showChapterList.isEmpty()) {
             return
         }
-        currentPagePos++
-        CoroutineScope(Dispatchers.Default).launch {
 
-            var posChapterPages = getChapterPages(chapterList[currentPos])
-            //计算实际的位置
-            if (currentPagePos > posChapterPages.size - 1) {
-                if (currentPos + 1 > chapterList.size - 1) {
-                    return@launch
-                } else {
-                    currentPagePos = 0
-                    currentPos++
-                }
-            }
-            posChapterPages = getChapterPages(chapterList[currentPos])
-            showChapterList[0] = showChapterList[1]
-            showChapterList[1] = showChapterList[2]
-            var nextPagePos = currentPagePos + 1
-            if (nextPagePos > posChapterPages.size - 1) {
-                val nextChapterPos = currentPos + 1
-                if (nextChapterPos > chapterList.size - 1) {
-                    showChapterList[2] = ChapterPageVo("", 0, mutableListOf(), 0)
-                } else {
-                    showChapterList[2] =
-                        getChapterPages(chapterList[nextChapterPos])[0]
-                }
+        currentPagePos++
+        Log.i("PageView", "wrong page -- openNext $currentPagePos")
+
+
+        //计算实际的位置
+        if (currentPagePos > currentChapterList.size - 1) {
+            if (currentPos + 1 > chapterList.size - 1) {
+                currentPagePos = currentChapterList.size - 1
+                return
             } else {
-                showChapterList[2] = posChapterPages[nextPagePos]
+                currentPagePos = 0
+                currentPos++
+                currentChapterList.clear()
+                currentChapterList.addAll(nextChapterList)
+                nextChapterList.clear()
+
+                CoroutineScope(Dispatchers.Default).launch {
+                    initChapterList(currentPos)
+                }
             }
-            data.postValue(showChapterList)
         }
+        showChapterList[0] = showChapterList[1]
+        showChapterList[1] = showChapterList[2]
+//        showChapterList[2] = ChapterPageVo("", 0, mutableListOf(), 0)
+
+        var nextPagePos = currentPagePos + 1
+        if (nextPagePos > currentChapterList.size - 1) {
+            val nextChapterPos = currentPos + 1
+            if (nextChapterPos > chapterList.size - 1) {
+                showChapterList[2] = ChapterPageVo("", 0, mutableListOf(), 0)
+            } else {
+                LogUtil.d("wrong page 翻页后 1： ${System.currentTimeMillis()}")
+                if (nextChapterList.isEmpty()) nextChapterList =
+                    getChapterPages(chapterList[nextChapterPos])
+                showChapterList[2] = nextChapterList[0]
+                LogUtil.d("wrong page 翻页后 2： ${System.currentTimeMillis()}")
+            }
+        } else {
+            showChapterList[2] = currentChapterList[nextPagePos]
+        }
+        data.postValue(showChapterList)
+
     }
 
     fun openPreChapter() {
@@ -256,40 +287,58 @@ class BookReadingViewModel() : ViewModel() {
             return
         }
         currentPagePos--
-        CoroutineScope(Dispatchers.Default).launch {
+        Log.i("PageView", "wrong page -- openPre $currentPagePos")
 
-            if (currentPagePos < 0) {
-                if (currentPos == 0) {
-                    currentPagePos = 0
-                    return@launch
-                } else {
-                    currentPos--
-                    currentPagePos = getChapterPages(chapterList[currentPos]).size - 1
-                }
-            }
-            var posChapterPages = getChapterPages(chapterList[currentPos])
-            showChapterList[2] = showChapterList[1]
-            showChapterList[1] = showChapterList[0]
-            var prePagePos = currentPagePos - 1
-            if (prePagePos < 0) {
-                var preChapterPos = currentPos - 1
-                if (preChapterPos < 0) {
-                    showChapterList[0] = ChapterPageVo("", 0, mutableListOf(), 0)
-                    currentPos = 0
-                    currentPagePos = 0
-                } else {
-                    val preChapter = getChapterPages(chapterList[preChapterPos])
-                    prePagePos = preChapter.size - 1
-                    showChapterList[0] = preChapter[prePagePos]
-                }
+        if (currentPagePos < 0) {
+            if (currentPos == 0) {
+                currentPagePos = 0
+                return
             } else {
-                showChapterList[0] = posChapterPages[prePagePos]
+                currentPos--
+                currentChapterList.clear()
+                currentChapterList.addAll(preChapterList)
+                preChapterList.clear()
+                currentPagePos = currentChapterList.size - 1
+
+                LogUtil.d("wrong page 1 ${Thread.currentThread().name}")
+                CoroutineScope(Dispatchers.Default).launch {
+
+                    initChapterList(currentPos)
+                    LogUtil.d("wrong page 2 ${Thread.currentThread().name}")
+
+                }
+                LogUtil.d("wrong page 3 ${Thread.currentThread().name}")
+
             }
-            data.postValue(showChapterList)
         }
+
+        showChapterList[2] = showChapterList[1]
+        showChapterList[1] = showChapterList[0]
+//        showChapterList[0] = ChapterPageVo("", 0, mutableListOf(), 0)
+
+
+        var prePagePos = currentPagePos - 1
+        if (prePagePos < 0) {
+            var preChapterPos = currentPos - 1
+            if (preChapterPos < 0) {
+                showChapterList[0] = ChapterPageVo("", 0, mutableListOf(), 0)
+                currentPos = 0
+                currentPagePos = 0
+            } else {
+                if (preChapterList.isEmpty())
+                    preChapterList = getChapterPages(chapterList[preChapterPos])
+                prePagePos = preChapterList.size - 1
+                showChapterList[0] = preChapterList[prePagePos]
+            }
+        } else {
+            showChapterList[0] = currentChapterList[prePagePos]
+        }
+        data.postValue(showChapterList)
+
     }
 
-    private fun getChapterPages(chapter: ChapterVo): List<ChapterPageVo> {
+    //每一章节分页
+    private fun getChapterPages(chapter: ChapterVo): MutableList<ChapterPageVo> {
         val chapterBR = getChapterBR(chapter)
         val pages = mutableListOf<ChapterPageVo>()
         var rHeight: Int = mPageHeight
@@ -323,7 +372,7 @@ class BookReadingViewModel() : ViewModel() {
                     paragraph = paragraph.substring(wordCount)
                 }
             }
-            rHeight -= tSize
+//            rHeight -= tSize
         }
         if (lines.isNotEmpty()) {
             pages.add(

@@ -137,7 +137,8 @@ class PageView @JvmOverloads constructor(
                 }
             }
             MotionEvent.ACTION_UP -> {
-                Log.i("pageView", "compute ACTION_UP $isMove")
+                Log.i("PageView", "wrong page -- touchup $isMove")
+
                 if (isMove) {
                     animMode.touchUp()
                     val p = animMode.scrolledPosition()

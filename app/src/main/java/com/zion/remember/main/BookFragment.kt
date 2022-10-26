@@ -25,10 +25,13 @@ import com.zion.remember.databinding.FragmentBookBinding
 import com.zion.remember.util.UriParse
 import com.zion.remember.book.db.BookVo
 import com.zion.remember.db.AppDatabase
+import com.zion.remember.util.LogUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.util.stream.Collectors
 
 
 /**
@@ -48,6 +51,7 @@ import kotlinx.coroutines.withContext
 class BookFragment : Fragment() {
 
     private var _binding: FragmentBookBinding? = null
+    private lateinit var books : MutableList<BookVo>
     private val txtLaunch = registerForActivityResult(ActivityResultContracts.GetContent()) {
         //
         it?.let {
@@ -56,15 +60,23 @@ class BookFragment : Fragment() {
                 title = UriParse.getFileName(it, requireContext()),
                 path = UriParse.parseFile(it, requireContext()) ?: ""
             )
-            CoroutineScope(Dispatchers.Default).launch {
-                BookDatabase.getInstance(requireContext()).bookDao().saveBook(
+          val paths =  books.stream().map(BookVo::path).collect(Collectors.toList())
+            if (!paths.contains(vo.path)) {
+                CoroutineScope(Dispatchers.Default).launch {
+                    BookDatabase.getInstance(requireContext()).bookDao().saveBook(
+                        vo
+                    )
+                }
+                bookAdapter.add(
                     vo
                 )
+            } else {
+                books.filterIndexed { index, bookVo ->
+                    if (bookVo.path == vo.path)
+                        _binding?.localBookRv?.scrollToPosition(index)
+                    true
+                }
             }
-            bookAdapter.add(
-                vo
-            )
-
         }
     }
     private val bookAdapter = BookLocalRvAdapter()
@@ -160,10 +172,16 @@ class BookFragment : Fragment() {
         }
 
         CoroutineScope(Dispatchers.Default).launch {
-            val books =  BookDatabase.getInstance(requireContext()).bookDao().getBooks()
+            books =  BookDatabase.getInstance(requireContext()).bookDao().getBooks()
+            LogUtil.d("books ${books.toString()}")
             withContext(Dispatchers.Main) {
-                bookAdapter.refresh(books)
-                Log.i("BookFragment", "refresh")
+                books.stream().distinct().filter { book ->
+                    File(book.path).isFile
+                }.collect(Collectors.toList()).let {
+                    bookAdapter.refresh(it)
+                }
+
+                LogUtil.i("BookFragment refresh")
             }
 
         }

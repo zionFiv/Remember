@@ -2,7 +2,7 @@ package com.zion.remember.book
 
 import android.animation.ObjectAnimator
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.*
 import androidx.lifecycle.ViewModelProvider
@@ -25,7 +25,7 @@ class BookReadingActivity : AppCompatActivity() {
         binding = ActivityBookReadingBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
-        val bookFile = intent.getStringExtra("BOOK_FILE")
+        val path = intent.getStringExtra("BOOK_FILE")
 
         fontSize =
             if (SpUtil.getFloat("reader_font_size") == 0f) fontSize else SpUtil.getFloat("reader_font_size")
@@ -73,8 +73,10 @@ class BookReadingActivity : AppCompatActivity() {
 
 
         viewModel = ViewModelProvider(this).get(BookReadingViewModel::class.java)
-        viewModel.parseBook(bookFile)
+        viewModel.parseBook(path)
         viewModel.data.observe(this) {
+            Log.i("PageView", "wrong page -- setBitmap ${it[0].position} /n ${it[1].position} /n ${it[2].position}")
+
             binding?.pageView?.apply {
                 setBitmap(it)
             }

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.zion.remember.databinding.ItemNoteBinding
 import com.zion.remember.db.AppDatabase
 import com.zion.remember.db.NoteInformation
+import com.zion.remember.util.MobileUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -65,6 +66,7 @@ class NoteItemRecyclerViewAdapter(private val values: MutableList<NoteInformatio
                 Toast.makeText(holder.itemView.context, "并没有输入任何内容", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            MobileUtil.hideSoftInput(it)
             var noteInfo =
                 NoteInformation(holder.dateTv.text.toString(), holder.contentEt.text.toString())
             CoroutineScope(Dispatchers.Main).launch {

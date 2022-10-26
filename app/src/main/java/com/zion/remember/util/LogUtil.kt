@@ -11,7 +11,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 
 object LogUtil {
-
+    private const val TAG = "log_util"
     fun init(context: Context) {
         Logan.init(
             LoganConfig.Builder()
@@ -21,6 +21,35 @@ object LogUtil {
                 .setEncryptKey16("S9u978T13NLCGc5W".toByteArray())
                 .build())
     }
+
+    fun d(logStr : String){
+        Log.d(TAG, logStr)
+        Logan.w(logStr, 0x12)
+    }
+
+
+    fun v(logStr: String){
+        Log.v(TAG, logStr)
+        Logan.w(logStr, 0x12)
+    }
+
+    fun i(logStr: String){
+        Log.i(TAG, logStr)
+        Logan.w(logStr, 0x12)
+    }
+
+    fun w(logStr: String){
+        Log.w(TAG, logStr)
+        Logan.w(logStr, 0x12)
+    }
+
+    fun e(logStr: String){
+        Log.e(TAG, logStr)
+        Logan.w(logStr, 0x12)
+    }
+
+
+
 
     fun parse(context: Context, dates: Array<String>) {
         Logan.s(dates, object : SendLogRunnable() {
