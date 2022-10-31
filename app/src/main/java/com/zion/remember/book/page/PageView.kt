@@ -63,8 +63,15 @@ class PageView @JvmOverloads constructor(
 
     }
 
-    fun setPageMode() {
-        animMode = SimulatePageAnim()
+    fun setPageMode(mode : AnimMode) {
+        animMode = when(mode) {
+            AnimMode.Simuluate ->
+                SimulatePageAnim()
+            AnimMode.Slide ->
+                SlidePageAnim()
+            AnimMode.Cover ->
+                CoverPageAnim()
+        }
         animMode.initAnim(context, mPageWidth, mPageHeight)
     }
 
@@ -101,6 +108,7 @@ class PageView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
 //        super.onTouchEvent(event)
         animMode.setTouchPoint(event.x, event.y)
+
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 mStartX = event.x
@@ -154,6 +162,8 @@ class PageView @JvmOverloads constructor(
                     )
                     if (mCenterRect.contains(event.x, event.y)) {
                         mTouchListener?.center()
+                    } else {
+                        mTouchListener?.onTouch()
                     }
 
                 }

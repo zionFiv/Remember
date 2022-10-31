@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.*
 import androidx.lifecycle.ViewModelProvider
 import com.zion.remember.R
+import com.zion.remember.book.page.AnimMode
 import com.zion.remember.databinding.ActivityBookReadingBinding
 import com.zion.remember.util.MobileUtil
 import com.zion.remember.util.SpUtil
@@ -29,10 +30,39 @@ class BookReadingActivity : AppCompatActivity() {
 
         fontSize =
             if (SpUtil.getFloat("reader_font_size") == 0f) fontSize else SpUtil.getFloat("reader_font_size")
+
+
+        viewModel = ViewModelProvider(this).get(BookReadingViewModel::class.java)
+        viewModel.parseBook(path)
+        viewModel.data.observe(this) {
+            Log.i(
+                "PageView",
+                "wrong page -- setBitmap ${it[0].position} /n ${it[1].position} /n ${it[2].position}"
+            )
+
+            binding?.pageView?.apply {
+                setBitmap(it)
+            }
+        }
+        fontChange(fontSize)
+        viewLogic()
+    }
+
+    private fun viewLogic() {
+
         binding?.pageView?.apply {
-            setPageMode()
+            setPageMode(AnimMode.Simuluate)
             setTouchListener(object : PageView.TouchListener {
                 override fun onTouch(): Boolean {
+                    binding?.bookToolLayout?.let {
+                        ObjectAnimator.ofFloat(it, "translationY", 0f, 300f)
+                            .setDuration(500).start()
+                        it.postDelayed({
+                            it.isVisible = false
+                        }, 500)
+                        statusbarShow(false)
+                        binding?.bookToolSetting?.isVisible = false
+                    }
                     return true
                 }
 
@@ -71,18 +101,6 @@ class BookReadingActivity : AppCompatActivity() {
         }
 
 
-
-        viewModel = ViewModelProvider(this).get(BookReadingViewModel::class.java)
-        viewModel.parseBook(path)
-        viewModel.data.observe(this) {
-            Log.i("PageView", "wrong page -- setBitmap ${it[0].position} /n ${it[1].position} /n ${it[2].position}")
-
-            binding?.pageView?.apply {
-                setBitmap(it)
-            }
-        }
-        fontChange(fontSize)
-
         binding?.fontDec?.setOnClickListener {
             fontSize -= MobileUtil.sp2px(1f)
             fontChange(fontSize)
@@ -94,7 +112,7 @@ class BookReadingActivity : AppCompatActivity() {
         }
 
         binding?.bgGroup?.setOnCheckedChangeListener { _, checkedId ->
-            when(checkedId) {
+            when (checkedId) {
                 R.id.bg_ccebcc ->
                     binding?.pageView?.changeBgColor(BgColor.Bg1)
                 R.id.bg_cec29c ->
@@ -122,8 +140,8 @@ class BookReadingActivity : AppCompatActivity() {
 
         binding?.toolChapterBtn?.setOnClickListener {
             BookChapterDialog().apply {
-               setChapterList(viewModel.chapterList)
-                setDialListener(object : BookChapterDialog.DialogListener{
+                setChapterList(viewModel.chapterList)
+                setDialListener(object : BookChapterDialog.DialogListener {
                     override fun dismiss() {
                         statusbarShow(false)
                     }
@@ -137,12 +155,26 @@ class BookReadingActivity : AppCompatActivity() {
             }.show(supportFragmentManager, "book_chapter")
         }
 
+        binding?.animModeGroup?.setOnCheckedChangeListener { group, checkedId ->
+            when (checkedId) {
+                R.id.anim_mode_simulate ->
+                    binding?.pageView?.setPageMode(AnimMode.Simuluate)
+                R.id.anim_mode_slide ->
+                    binding?.pageView?.setPageMode(AnimMode.Slide)
+                R.id.anim_mode_cover ->
+                    binding?.pageView?.setPageMode(AnimMode.Cover)
+            }
+        }
     }
 
     private fun fontChange(f_Size: Float) {//font改变后，需要重新设置章节list
         binding?.fontSize?.text = f_Size.toInt().toString()
         binding?.pageView?.setFontSize(f_Size)
-        viewModel.refreshChapter(f_Size, MobileUtil.getScreenWidth(this), MobileUtil.getScreenHeight(this))
+        viewModel.refreshChapter(
+            f_Size,
+            MobileUtil.getScreenWidth(this),
+            MobileUtil.getScreenHeight(this)
+        )
     }
 
     override fun onStop() {
@@ -156,10 +188,10 @@ class BookReadingActivity : AppCompatActivity() {
         statusbarShow(false)
     }
 
-    fun statusbarShow(show : Boolean) {
+    fun statusbarShow(show: Boolean) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         ViewCompat.getWindowInsetsController(binding!!.root)?.apply {
-            if(show){
+            if (show) {
                 show(WindowInsetsCompat.Type.systemBars())
             } else {
                 hide(WindowInsetsCompat.Type.systemBars())

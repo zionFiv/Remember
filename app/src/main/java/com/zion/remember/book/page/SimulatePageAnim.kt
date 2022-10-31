@@ -9,7 +9,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
 
-class SimulatePageAnim : PageAnim() {
+class SimulatePageAnim : HorizontalPageAnim() {
     var mMiddleX: Float = 0f
     var mMiddleY: Float = 0f
     var mCornerX: Int = 0
@@ -47,18 +47,14 @@ class SimulatePageAnim : PageAnim() {
     private var mColorMatrixFilter: ColorMatrixColorFilter? = null
     private var mMatrix: Matrix? = null
     private val mMatrixArray = floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 1.0f)
-    private var isPre: Boolean? = null
-    override fun isPre(): Boolean {
-        return isPre ?: false
-    }
+
 
     private var isCancel = false
     override fun isCancel(): Boolean {
         return isCancel
     }
 
-    private var mStartX = 0f
-    private var mStartY = 0f
+
 
     init {
         mPaint.style = Paint.Style.FILL
@@ -74,14 +70,14 @@ class SimulatePageAnim : PageAnim() {
         mColorMatrixFilter = ColorMatrixColorFilter(cm)
         mMatrix = Matrix()
 
-        mTouchX = 0.01f // 不让x,y为0,否则在点计算时会有问题
 
-        mTouchY = 0.01f
     }
 
     override fun initAnim(context: Context, w: Int, h: Int) {
         super.initAnim(context, w, h)
-        mMaxLength = Math.hypot(mViewWidth.toDouble(), mViewHeight.toDouble()).toFloat()
+        mTouchX = 0.01f // 不让x,y为0,否则在点计算时会有问题
+        mTouchY = 0.01f
+        mMaxLength = 0f
         createDrawable()
     }
 
@@ -131,11 +127,7 @@ class SimulatePageAnim : PageAnim() {
         mFrontShadowDrawableHBT?.setGradientType(GradientDrawable.LINEAR_GRADIENT)
     }
 
-    override fun touchDown(x: Float, y: Float) {
-        mStartX = x
-        mStartY = y
-        isPre = null
-    }
+
 
     override fun touchMove() {
         if (isPre == null) {

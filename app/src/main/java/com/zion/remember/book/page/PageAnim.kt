@@ -11,27 +11,24 @@ abstract class PageAnim {
     var mViewWidth: Int = 0
     var mViewHeight: Int = 0
 
-
-    open fun initAnim(context: Context, w: Int, h: Int) {
-
-
-    }
-
     fun setTouchPoint(x: Float, y: Float) {
         mTouchX = x
         mTouchY = y
     }
 
-    abstract fun scrolledPosition() : Point
-    abstract fun touchDown(mStartX : Float, mStartY: Float)
+    open fun updateSize(w: Int, h: Int) {
+        mViewWidth = w
+        mViewHeight = h
+    }
+
+    abstract fun initAnim(context: Context, w: Int, h: Int)
+    abstract fun scrolledPosition(): Point // 计算最终需要滑向的位置
+    abstract fun isPre() : Boolean
+    abstract fun touchDown(x: Float, y: Float)
     abstract fun touchMove()
     abstract fun touchUp()
-    abstract fun isPre() : Boolean
-    abstract fun isCancel() : Boolean
-
+    abstract fun isCancel(): Boolean
     abstract fun draw(canvas: Canvas, curBitmap: Bitmap, nextBitmap: Bitmap)
-     fun updateSize(w: Int, h: Int) {
-         mViewWidth = w
-         mViewHeight = h
-    }
+
+
 }

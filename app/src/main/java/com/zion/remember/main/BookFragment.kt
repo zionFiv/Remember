@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -52,34 +53,40 @@ class BookFragment : Fragment() {
 
     private var _binding: FragmentBookBinding? = null
     private lateinit var books : MutableList<BookVo>
-    private val txtLaunch = registerForActivityResult(ActivityResultContracts.GetContent()) {
-        //
-        it?.let {
-          val vo =   BookVo(
-                img = "",
-                title = UriParse.getFileName(it, requireContext()),
-                path = UriParse.parseFile(it, requireContext()) ?: ""
-            )
-          val paths =  books.stream().map(BookVo::path).collect(Collectors.toList())
-            if (!paths.contains(vo.path)) {
-                CoroutineScope(Dispatchers.Default).launch {
-                    BookDatabase.getInstance(requireContext()).bookDao().saveBook(
+    private lateinit var txtLaunch : ActivityResultLauncher<String>
+    private val bookAdapter = BookLocalRvAdapter()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        txtLaunch = registerForActivityResult(ActivityResultContracts.GetContent()) {
+            //
+            it?.let {
+                val vo =   BookVo(
+                    img = "",
+                    title = UriParse.getFileName(it, requireContext()),
+                    path = UriParse.parseFile(it, requireContext()) ?: ""
+                )
+                val paths =  books.stream().map(BookVo::path).collect(Collectors.toList())
+                if (!paths.contains(vo.path)) {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        BookDatabase.getInstance(requireContext()).bookDao().saveBook(
+                            vo
+                        )
+                    }
+                    bookAdapter.add(
                         vo
                     )
-                }
-                bookAdapter.add(
-                    vo
-                )
-            } else {
-                books.filterIndexed { index, bookVo ->
-                    if (bookVo.path == vo.path)
-                        _binding?.localBookRv?.scrollToPosition(index)
-                    true
+                } else {
+                    books.filterIndexed { index, bookVo ->
+                        if (bookVo.path == vo.path)
+                            _binding?.localBookRv?.scrollToPosition(index)
+                        true
+                    }
                 }
             }
         }
+
     }
-    private val bookAdapter = BookLocalRvAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

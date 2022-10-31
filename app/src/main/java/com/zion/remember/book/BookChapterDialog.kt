@@ -55,7 +55,6 @@ class BookChapterDialog : DialogFragment(R.layout.fragment_item_list) {
 
     override fun dismiss() {
         super.dismiss()
-        Toast.makeText(requireContext(), "show", Toast.LENGTH_SHORT).show()
         mListener.dismiss()
     }
 
