@@ -1,10 +1,12 @@
 package com.zion.remember.book.page
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.*
+import android.os.Handler
+import android.os.Looper
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.BackgroundColorSpan
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -14,9 +16,13 @@ import android.view.animation.LinearInterpolator
 import android.widget.Scroller
 import androidx.core.content.ContextCompat
 import com.zion.remember.R
+import com.zion.remember.util.LogUtil
 import com.zion.remember.util.MobileUtil
 import com.zion.remember.vo.ChapterPageVo
+import java.lang.StringBuilder
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 /*
 不能快翻 （已处理）
@@ -33,11 +39,10 @@ class PageView @JvmOverloads constructor(
     private var mFontSize = MobileUtil.sp2px(16f)
     private var textPaint: Paint = Paint()
     private var tipPaint: Paint = Paint()
-    private var statusBarHeight = 0
+    private var mHorizontalEdge = HorizontalMargin.Big
+    private var mLineEdge = LineMargin.Small
     private var mContent: String = ""
-    private var titleSize: Float = 0.0f //
     private var contentSize: Float = 0.0f//
-    private var marginWidth: Float = 0.0f//
     var mPageWidth: Int = 0 //
     var mPageHeight: Int = 0 //
     private var titleStr: String = ""//
@@ -63,9 +68,9 @@ class PageView @JvmOverloads constructor(
 
     }
 
-    fun setPageMode(mode : AnimMode) {
-        animMode = when(mode) {
-            AnimMode.Simuluate ->
+    fun setPageMode(mode: AnimMode) {
+        animMode = when (mode) {
+            AnimMode.Simulate ->
                 SimulatePageAnim()
             AnimMode.Slide ->
                 SlidePageAnim()
@@ -79,9 +84,10 @@ class PageView @JvmOverloads constructor(
         super.onDraw(canvas)
         Log.i("pageView", "currentBitmap is null? $currentBitmap")
         currentBitmap?.apply {
-            if (!isMove) { // 静止显示
+            if (!isMove || isLongClick) { // 静止显示
                 canvas.drawBitmap(this, 0.0f, 0.0f, null)
             } else {
+                Log.i("pageView", "compute onDraw $isMove? $currentBitmap")
                 // 滑动静止
                 if (animMode.isPre()) {
                     animMode.draw(canvas, this, befBitmap ?: this)
@@ -104,6 +110,7 @@ class PageView @JvmOverloads constructor(
     var mStartX = 0f
     var mStartY = 0f
     var moveLength = 0f
+    var isLongClick = false
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
 //        super.onTouchEvent(event)
@@ -115,6 +122,7 @@ class PageView @JvmOverloads constructor(
                 mStartY = event.y
                 isMove = false
                 moveLength = 0f
+                isLongClick = false
                 if (!mScroller.isFinished) {//
                     mScroller.abortAnimation()
                     when {
@@ -131,6 +139,13 @@ class PageView @JvmOverloads constructor(
                         }
                     }
                 }
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (!isMove
+                        && mStartX > mHorizontalEdge.space && mStartX < mPageWidth - mHorizontalEdge.space
+                    ) {
+                        isLongClick = true
+                    }
+                }, 1000)
                 Log.i("pageView", "compute ACTION_DOWN $isMove")
                 animMode.touchDown(mStartX, mStartY)
             }
@@ -138,16 +153,39 @@ class PageView @JvmOverloads constructor(
                 val slop = ViewConfiguration.get(context).scaledTouchSlop
                 moveLength += abs(mStartX - event.x)
                 isMove = moveLength > slop
-                Log.i("pageView", "compute ACTION_MOVE $isMove")
-                if (isMove) {
+                Log.i("pageView", "compute ACTION_MOVE $isMove $isLongClick")
+                if (isLongClick) {
+                    isMove = false
+                    currentBitmap = currentChapter?.let {
+                        var left = mStartX
+                        var right = event.x
+
+                        if (mStartX < mHorizontalEdge.space) left = mHorizontalEdge.space
+                        if (mStartX > mPageWidth - mHorizontalEdge.space) left =
+                            mPageWidth - mHorizontalEdge.space
+                        var leftCount = ((left - mHorizontalEdge.space) / mFontSize).toInt()
+                        if (event.y < mStartY) leftCount++
+                        left = mHorizontalEdge.space + leftCount * mFontSize
+                        var rightCount = ((right - mHorizontalEdge.space) / mFontSize).toInt()
+                        if (event.y > mStartY) rightCount++
+                        right = mHorizontalEdge.space + rightCount * mFontSize
+                        getBitmap(
+                            it,
+                            RectF(leftCount.toFloat(), mStartY, rightCount.toFloat(), event.y)
+                        )
+                    }
+                    invalidate()
+                } else if (isMove) {
                     animMode.touchMove()
                     invalidate()
                 }
             }
             MotionEvent.ACTION_UP -> {
-                Log.i("PageView", "wrong page -- touchup $isMove")
-
-                if (isMove) {
+                Log.i("PageView", "compute ACTION_UP $isMove")
+                if (isLongClick) {
+                    isLongClick = false
+                    mTouchListener?.longTouch(copySb.toString(), mStartY, event.y)
+                } else if (isMove) {
                     animMode.touchUp()
                     val p = animMode.scrolledPosition()
                     mScroller.startScroll(event.x.toInt(), event.y.toInt(), p.x, p.y, 400)
@@ -212,12 +250,14 @@ class PageView @JvmOverloads constructor(
         return super.performClick()
     }
 
+    var currentChapter: ChapterPageVo? = null
     fun setBitmap(chapters: List<ChapterPageVo>) {
         if (chapters[0].contents.isNotEmpty()) {
             befBitmap = getBitmap(chapters[0])
         }
 
         currentBitmap = getBitmap(chapters[1])
+        currentChapter = chapters[1]
         if (chapters[2].contents.isNotEmpty()) {
             nextBitMap = getBitmap(chapters[2])
         }
@@ -225,30 +265,200 @@ class PageView @JvmOverloads constructor(
 
     }
 
-    private fun getBitmap(chapterPageVo: ChapterPageVo): Bitmap {
+    var copySb = StringBuilder()
+    private fun getBitmap(chapterPageVo: ChapterPageVo, rectF: RectF? = null): Bitmap {
         titleStr = chapterPageVo.title
         val contents = mutableListOf<String>()
         contents.clear()
         contents.addAll(chapterPageVo.contents)
-        var yPosition = MobileUtil.dp2px(20f) + MobileUtil.sp2px(12f)
+        copySb.clear()
+        var yPosition = Edge.topMargin//起始高度
         val tempBitmap = Bitmap.createBitmap(mPageWidth, mPageHeight, Bitmap.Config.RGB_565)
         tempBitmap?.let { bitmap ->
             val canvas = Canvas(bitmap)
             canvas.drawColor(ContextCompat.getColor(context, bgColor.color))
-            canvas.drawText(titleStr, MobileUtil.dp2px(15.0f), yPosition, tipPaint)
+            canvas.drawText(titleStr, mHorizontalEdge.space, yPosition, tipPaint)
             yPosition += MobileUtil.dp2px(10f)
             contents.forEach {
-                Log.i("pageView", "contents : $it")
-                yPosition += (MobileUtil.sp2px(1f) + mFontSize)
-                canvas.drawText(it, MobileUtil.dp2px(15.0f), yPosition, textPaint)
-                yPosition += ((MobileUtil.sp2px(1f) + mFontSize) / 2).toInt()
+                yPosition += (mFontSize)
+                if (isLongClick) {//长按高亮
+                    if(it.isNullOrBlank()) return@forEach
+                    var buidler = SpannableStringBuilder(it)
+                    buidler.setSpan(
+                        BackgroundColorSpan(
+                            ContextCompat.getColor(
+                                context,
+                                R.color.color_08ef
+                            )
+                        ), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    textPaint.color = buidler.getSpans<BackgroundColorSpan>(
+                        0,
+                        1,
+                        BackgroundColorSpan::class.java
+                    )[0].backgroundColor
+
+                    rectF?.let { it1 ->
+                        var startX = it1.left * mFontSize + mHorizontalEdge.space
+                        var endX = it1.right * mFontSize + mHorizontalEdge.space
+                        if (yPosition in rectF.bottom - mLineEdge.space..rectF.top + mLineEdge.space || yPosition in rectF.top - mLineEdge.space..rectF.bottom + mLineEdge.space) {
+                            if (abs(rectF.bottom - rectF.top) < mFontSize) {//只有一行
+
+                                if (it.length < min(it1.left, it1.right)) {
+
+                                } else if (it.length < max(it1.left, it1.right)) {
+                                    canvas.drawRect(
+                                        RectF(
+                                            min(it1.left, it1.right) * mFontSize + mHorizontalEdge.space,
+                                            yPosition - mFontSize,
+                                            it.length * mFontSize + mHorizontalEdge.space,
+                                            yPosition + MobileUtil.dp2px(2f)
+                                        ), textPaint
+                                    )
+                                    copySb.append(
+                                        it.substring(
+                                            min(it1.left, it1.right).toInt(),
+                                            it.length
+                                        )
+                                    )
+                                } else {
+                                    canvas.drawRect(
+                                        RectF(
+                                            startX,
+                                            yPosition - mFontSize,
+                                            endX,
+                                            yPosition + MobileUtil.dp2px(2f)
+                                        ), textPaint
+                                    )
+                                    copySb.append(
+                                        it.substring(
+                                            min(it1.left, it1.right).toInt(),
+                                            max(it1.left, it1.right).toInt()
+                                        )
+                                    )
+                                }
+
+                            } else {
+                                if (rectF.top < rectF.bottom) {//从上往下
+                                    if (yPosition < rectF.top + mFontSize) {//第一行
+                                        LogUtil.d("position 上下1 $yPosition top ${rectF.top}  bottom ${rectF.bottom} $mFontSize")
+                                        if(it1.left < it.length){
+                                            canvas.drawRect(
+                                                RectF(
+                                                    startX,
+                                                    yPosition - mFontSize,
+                                                    it.length * mFontSize + mHorizontalEdge.space,
+                                                    yPosition + MobileUtil.dp2px(2f)
+                                                ), textPaint
+                                            )
+                                            copySb.append(it.substring(it1.left.toInt()))
+                                        }
+
+                                    } else if (yPosition > rectF.bottom - mFontSize) {//最后一行
+                                        LogUtil.d("position 上下末 $yPosition top ${rectF.top}  bottom ${rectF.bottom} $mFontSize")
+                                        if(it1.right < it.length) {
+                                            canvas.drawRect(
+                                                RectF(
+                                                    mHorizontalEdge.space,
+                                                    yPosition - mFontSize,
+                                                    endX,
+                                                    yPosition + MobileUtil.dp2px(2f)
+                                                ), textPaint
+                                            )
+                                            copySb.append(it.substring(0, it1.right.toInt()))
+                                        } else {
+                                            canvas.drawRect(
+                                                RectF(
+                                                    mHorizontalEdge.space,
+                                                    yPosition - mFontSize,
+                                                    it.length * mFontSize + mHorizontalEdge.space,
+                                                    yPosition + MobileUtil.dp2px(2f)
+                                                ), textPaint
+                                            )
+                                            copySb.append(it)
+                                        }
+                                    } else {
+                                        LogUtil.d("position 上下中 $yPosition top ${rectF.top}  bottom ${rectF.bottom} $mFontSize")
+
+                                        canvas.drawRect(
+                                            RectF(
+                                                mHorizontalEdge.space,
+                                                yPosition - mFontSize,
+                                                it.length * mFontSize + mHorizontalEdge.space,
+                                                yPosition + MobileUtil.dp2px(2f)
+                                            ), textPaint
+                                        )
+                                        copySb.append(it)
+                                    }
+                                } else {//从下往上
+                                    if (yPosition < rectF.bottom + mFontSize) {//第一行
+                                        LogUtil.d("position 下上1 $yPosition top ${rectF.top}  bottom ${rectF.bottom} $mFontSize")
+                                        if(it1.right < it.length) {
+                                            canvas.drawRect(
+                                                RectF(
+                                                    endX,
+                                                    yPosition - mFontSize,
+                                                    it.length * mFontSize + mHorizontalEdge.space,
+                                                    yPosition + MobileUtil.dp2px(2f)
+                                                ), textPaint
+                                            )
+                                            copySb.append(it1.right.toInt())
+                                        }
+                                    } else if (yPosition > rectF.top - mFontSize) {//最后一行
+                                        LogUtil.d("position 下上末 $yPosition top ${rectF.top}  bottom ${rectF.bottom} $mFontSize")
+                                        if(it1.left < it.length) {
+                                            canvas.drawRect(
+                                                RectF(
+                                                    mHorizontalEdge.space,
+                                                    yPosition - mFontSize,
+                                                    startX,
+                                                    yPosition + MobileUtil.dp2px(2f)
+                                                ), textPaint
+                                            )
+                                            copySb.append(0, it1.left.toInt())
+                                        } else {
+                                            canvas.drawRect(
+                                                RectF(
+                                                    mHorizontalEdge.space,
+                                                    yPosition - mFontSize,
+                                                    it.length * mFontSize + mHorizontalEdge.space,
+                                                    yPosition + MobileUtil.dp2px(2f)
+                                                ), textPaint
+                                            )
+                                            copySb.append(0)
+                                        }
+                                    } else {
+                                        LogUtil.d("position 下上中 $yPosition top ${rectF.top}  bottom ${rectF.bottom} $mFontSize")
+
+                                        canvas.drawRect(
+                                            RectF(
+                                                mHorizontalEdge.space,
+                                                yPosition - mFontSize,
+                                                it.length*mFontSize + mHorizontalEdge.space,
+                                                yPosition + MobileUtil.dp2px(2f)
+                                            ), textPaint
+                                        )
+                                        copySb.append(it)
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+                textPaint.color = ContextCompat.getColor(context, R.color.color_666666)
+                canvas.drawText(it, mHorizontalEdge.space, yPosition, textPaint)
+
+                yPosition += mLineEdge.space.toInt()//行间距
             }
             canvas.drawText(
                 "${chapterPageVo.position}",
-                MobileUtil.dp2px(15.0f),
-                mPageHeight.toFloat() - MobileUtil.dp2px(15.0f),
+                mHorizontalEdge.space,
+                mPageHeight.toFloat() - MobileUtil.dp2px(20.0f),
                 tipPaint
             )
+
+            LogUtil.d("position ${copySb.toString()}")
 
         }
         return tempBitmap
@@ -266,7 +476,14 @@ class PageView @JvmOverloads constructor(
 
     fun changeBgColor(bg: BgColor) {
         bgColor = bg
+    }
 
+    fun changeHorizontalEdge(horizontalEdge: HorizontalMargin) {
+        mHorizontalEdge = horizontalEdge
+    }
+
+    fun changeLineEdge(lineEdge: LineMargin) {
+        mLineEdge = lineEdge
     }
 
     interface TouchListener {
@@ -275,5 +492,6 @@ class PageView @JvmOverloads constructor(
         fun prePage()
         fun nextPage()
         fun cancel()
+        fun longTouch(param : String, positionStart : Float, positionEnd: Float)
     }
 }

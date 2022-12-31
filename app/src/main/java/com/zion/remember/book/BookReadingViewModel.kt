@@ -4,6 +4,7 @@ import android.text.TextPaint
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.zion.remember.book.page.LineMargin
 import com.zion.remember.util.LogUtil
 import com.zion.remember.util.MobileUtil
 import com.zion.remember.vo.ChapterPageVo
@@ -12,7 +13,6 @@ import kotlinx.coroutines.*
 import java.io.*
 import java.nio.charset.Charset
 import java.util.regex.Pattern
-import kotlin.coroutines.Continuation
 
 class BookReadingViewModel() : ViewModel() {
     private val CHAPTER_PATTERNS = arrayOf(
@@ -154,16 +154,18 @@ class BookReadingViewModel() : ViewModel() {
     var currentPos = 0
     var currentPagePos = 0
     private var mFontSize: Float = MobileUtil.sp2px(16f)
+    private var mLineMargin = LineMargin.Small
     private val showChapterList = mutableListOf<ChapterPageVo>()
     private var currentChapterList = mutableListOf<ChapterPageVo>()
     private var preChapterList = mutableListOf<ChapterPageVo>()
     private var nextChapterList = mutableListOf<ChapterPageVo>()
-    var mPageWidth = 0
-    var mPageHeight = 0
-    fun refreshChapter(fontSize: Float, pageWidth: Int, pageHeight: Int) {
+    private var mPageWidth = 0
+    private var mPageHeight = 0
+    fun refreshChapter(fontSize: Float, lineMargin: LineMargin, pageWidth: Int, pageHeight: Int) {
         mFontSize = fontSize
-        mPageWidth = pageWidth - MobileUtil.dp2px(30f).toInt()
-        mPageHeight = pageHeight - MobileUtil.dp2px(74f).toInt()//上下留白各20 + 上下文字各12dp
+        mLineMargin = lineMargin
+        mPageWidth = pageWidth
+        mPageHeight = pageHeight //上下留白30 + 40 + 上下文字各12dp
         openChapter(currentPos, currentPagePos)
     }
 
@@ -191,8 +193,7 @@ class BookReadingViewModel() : ViewModel() {
         currentPagePos = pagePos
         CoroutineScope(Dispatchers.Default).launch {
 
-            currentChapterList =
-                async {
+            currentChapterList = async {
                     initChapterList(position)
                 }.await()
 
@@ -342,7 +343,7 @@ class BookReadingViewModel() : ViewModel() {
         val chapterBR = getChapterBR(chapter)
         val pages = mutableListOf<ChapterPageVo>()
         var rHeight: Int = mPageHeight
-        var tSize: Int = (mFontSize + MobileUtil.dp2px(1f)).toInt()
+        var tSize: Int = (mFontSize).toInt()
 
         val title = chapter.chapterTitle
         var paragraph = ""
@@ -365,14 +366,22 @@ class BookReadingViewModel() : ViewModel() {
                 } else {
                     var wordCount = textPaint.breakText(paragraph, true, mPageWidth.toFloat(), null)
                     var subStr = paragraph.substring(0, wordCount)
+
                     if (subStr.isNotBlank()) {
-                        rHeight -= (tSize / 2)
+                        rHeight -= mLineMargin.space.toInt()//行间距
                         lines.add(subStr)
                     }
                     paragraph = paragraph.substring(wordCount)
+                    LogUtil.d("substr : $paragraph ${paragraph.length} ${wordCount}")
+
+                    if (paragraph.isEmpty()) {//每段末尾加一行，扩大间距
+                        rHeight -= tSize
+                        rHeight -= mLineMargin.space.toInt()//行间距
+                        lines.add("\u3000")
+                    }
                 }
             }
-//            rHeight -= tSize
+//
         }
         if (lines.isNotEmpty()) {
             pages.add(

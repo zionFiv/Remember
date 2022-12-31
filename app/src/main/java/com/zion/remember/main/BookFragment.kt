@@ -26,6 +26,7 @@ import com.zion.remember.databinding.FragmentBookBinding
 import com.zion.remember.util.UriParse
 import com.zion.remember.book.db.BookVo
 import com.zion.remember.db.AppDatabase
+import com.zion.remember.http.RManager
 import com.zion.remember.util.LogUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -143,9 +144,7 @@ class BookFragment : Fragment() {
 
                     }
                 )
-//                Environment.getExternalStorageDirectory().listFiles()?.forEach { file ->
-//                    Log.e("file", file.absolutePath)
-//                }
+
             } else {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
@@ -162,6 +161,12 @@ class BookFragment : Fragment() {
 
         _binding?.manualAddBook?.setOnClickListener {
             txtLaunch.launch("text/plain")
+        }
+        _binding?.localBookTv?.setOnClickListener {
+//            clearAllBook()
+            val r = RManager()
+            r.init()
+            r.request()
         }
         _binding?.localBookRv?.run {
             adapter = bookAdapter
@@ -193,6 +198,21 @@ class BookFragment : Fragment() {
 
         }
 
+    }
+
+    private fun clearAllBook(){
+        books.stream().forEach {
+            clearBook(it)
+
+        }
+        bookAdapter.refresh(mutableListOf())
+    }
+
+   private fun clearBook(book : BookVo){
+        File(book.path).delete()
+        CoroutineScope(Dispatchers.Default).launch {
+            BookDatabase.getInstance(requireContext()).bookDao().deleteBook(book)
+        }
     }
 
 

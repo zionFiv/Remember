@@ -94,7 +94,7 @@ object UriParse {
         var tempFile: File? = null
         stream?.let {
             val buffer = ByteArray(8 * 1024)
-            tempFile = File(context.cacheDir, fileName)
+            tempFile = File(context.filesDir, fileName)
             if (tempFile?.exists() == true) {
                 tempFile?.delete()
             }
