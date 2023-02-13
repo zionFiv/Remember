@@ -166,7 +166,7 @@ class BookFragment : Fragment() {
 //            clearAllBook()
             val r = RManager()
             r.init()
-            r.request()
+            r.getForumList()
         }
         _binding?.localBookRv?.run {
             adapter = bookAdapter

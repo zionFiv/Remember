@@ -3,11 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Code/Remember/app/src/main/res/drawable/book_anim_bg.xml" value="0.1" />
+        <entry key="..\:/Code/Remember/app/src/main/res/drawable/border_blue.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/drawable/border_white.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/drawable/cursor_bg.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1025" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout-sw600dp/fragment_item_list.xml" value="0.103125" />
-        <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_book_reading.xml" value="0.24722222222222223" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_book_reading.xml" value="0.24050632911392406" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_item_detail.xml" value="0.10208333333333333" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_item_detail_test.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_main.xml" value="0.27134146341463417" />
