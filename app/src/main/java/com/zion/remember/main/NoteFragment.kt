@@ -5,10 +5,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.RecyclerView
 
 import com.zion.remember.databinding.FragmentNoteBinding
-import com.zion.remember.db.NoteInformation
 
 
 /*

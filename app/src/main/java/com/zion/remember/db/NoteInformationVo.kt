@@ -6,7 +6,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "note")
-data class NoteInformation(
+data class NoteInformationVo(
     @PrimaryKey val noteDate: String,
     @ColumnInfo(name = "content") var content: String?
 ) {

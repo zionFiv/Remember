@@ -4,10 +4,9 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
 import com.zion.remember.db.AppDatabase
-import com.zion.remember.db.NoteInformation
+import com.zion.remember.db.NoteInformationVo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -15,16 +14,18 @@ import java.util.*
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
     var startIndex = 0
 
-    fun getNextTen(): LiveData<Result<MutableList<NoteInformation>>> {
+    fun getNextTen(): LiveData<Result<MutableList<NoteInformationVo>>> {
         return getNoteTen(startIndex + 10)
     }
 
-    fun getLastTen(): LiveData<Result<MutableList<NoteInformation>>>? {
+    //下拉获取更早十条
+    fun getLastTen(): LiveData<Result<MutableList<NoteInformationVo>>>? {
         if (startIndex < 0) return null
         return getNoteTen(startIndex - 10)
     }
 
-    fun getFirstShowTen(): LiveData<Result<MutableList<NoteInformation>>> {
+    //获取第一次十条
+    fun getFirstShowTen(): LiveData<Result<MutableList<NoteInformationVo>>> {
 
         return getNoteTen(0, true)
     }
@@ -32,8 +33,8 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
     private fun getNoteTen(
         start: Int,
         isFirst: Boolean = false
-    ): LiveData<Result<MutableList<NoteInformation>>> {
-        var data = MutableLiveData<Result<MutableList<NoteInformation>>>()
+    ): LiveData<Result<MutableList<NoteInformationVo>>> {
+        var data = MutableLiveData<Result<MutableList<NoteInformationVo>>>()
         CoroutineScope(Dispatchers.Default).launch {
             Log.d("load", "1 + " + System.currentTimeMillis())
             startIndex = if (isFirst) {
@@ -48,7 +49,7 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
             if (isFirst) {
                 val nowDate = SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().time)
                 if (notes.isEmpty() || notes[notes.size - 1].noteDate != nowDate) {
-                    notes.add(NoteInformation(nowDate, "").apply { edit = true })
+                    notes.add(NoteInformationVo(nowDate, "").apply { edit = true })
                 }
             }
             Log.d("load", "2 + " + System.currentTimeMillis())

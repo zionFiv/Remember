@@ -32,6 +32,12 @@ abstract class RvAdapter<T>(val context : Context ,val datas : MutableList<T>, v
         notifyDataSetChanged()
     }
 
+    fun addAll(items : MutableList<T>) {
+
+        datas.addAll(items)
+        notifyDataSetChanged()
+    }
+
     abstract fun convert(holder : RVHolder, data : T, position: Int)
 
 }

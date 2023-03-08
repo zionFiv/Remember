@@ -23,6 +23,8 @@ import kotlin.math.abs
 class LeftDeleteView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
+    private var needResetCompute: Boolean = false
+
     /**
      * 上下文
      */
@@ -78,61 +80,60 @@ class LeftDeleteView @JvmOverloads constructor(
     /**
      * 处理触摸事件
      */
-//    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-//        val actionMasked = ev.actionMasked
-//        when (actionMasked) {
-//            MotionEvent.ACTION_DOWN -> {
-//                mInitX = ev.rawX + scrollX
-//                mInitY = ev.rawY
-//                clearAnim()
-//            }
-//            MotionEvent.ACTION_MOVE -> {
-//                if (mInitX - ev.rawX < 0) {
-//                    // mRecyclerView拦截
-//                    mRecyclerView?.let {
-//                        if (needResetCompute) {
-//                            it.requestDisallowInterceptTouchEvent(false)
-//                            needResetCompute = false
-//                        }
-//                    }
-//                    return false
-//                }
-//                // y轴方向上达到滑动最小距离, x 轴未达到
-//                if (abs(ev.rawY - mInitY) >= mMinTouchDistance
-//                    && abs(ev.rawY - mInitY) > abs(mInitX - ev.rawX - scrollX)) {
-//                    // mRecyclerView拦截
-//                    mRecyclerView?.let {
-//                        if (needResetCompute) {
-//                            it.requestDisallowInterceptTouchEvent(false)
-//                            needResetCompute = false
-//                        }
-//                    }
-//                    return false
-//                }
-//                // x轴方向达到了最小滑动距离，y轴未达到
-//                if (abs(mInitX - ev.rawX - scrollX) >= mMinTouchDistance
-//                    && abs(ev.rawY - mInitY) <= abs(mInitX - ev.rawX - scrollX)) {
-//                    // mRecyclerView拦截
-//                    mRecyclerView?.let {
-//                        if (needResetCompute) {
-//                            it.requestDisallowInterceptTouchEvent(false)
-//                            needResetCompute = false
-//                        }
-//                    }
-//                    return true
-//                }
-//            }
-//            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-//                mRecyclerView?.let {
-//                    it.requestDisallowInterceptTouchEvent(false)
-//                    needResetCompute = true
-//                }
-//            }
-//            else -> {
-//            }
-//        }
-//        return super.onInterceptTouchEvent(ev)
-//    }
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                mInitX = ev.rawX + scrollX
+                mInitY = ev.rawY
+                clearAnim()
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (mInitX - ev.rawX < 0) {
+                    // mRecyclerView拦截
+                    parent?.let {
+                        if (needResetCompute) {
+                            it.requestDisallowInterceptTouchEvent(false)
+                            needResetCompute = false
+                        }
+                    }
+                    return false
+                }
+                // y轴方向上达到滑动最小距离, x 轴未达到
+                if (abs(ev.rawY - mInitY) >= mMinTouchDistance
+                    && abs(ev.rawY - mInitY) > abs(mInitX - ev.rawX - scrollX)) {
+                    // mRecyclerView拦截
+                    parent?.let {
+                        if (needResetCompute) {
+                            it.requestDisallowInterceptTouchEvent(false)
+                            needResetCompute = false
+                        }
+                    }
+                    return false
+                }
+                // x轴方向达到了最小滑动距离，y轴未达到
+                if (abs(mInitX - ev.rawX - scrollX) >= mMinTouchDistance
+                    && abs(ev.rawY - mInitY) <= abs(mInitX - ev.rawX - scrollX)) {
+                    // mRecyclerView拦截
+                    parent?.let {
+                        if (needResetCompute) {
+                            it.requestDisallowInterceptTouchEvent(false)
+                            needResetCompute = false
+                        }
+                    }
+                    return true
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                parent?.let {
+                    it.requestDisallowInterceptTouchEvent(false)
+                    needResetCompute = true
+                }
+            }
+            else -> {
+            }
+        }
+        return super.onInterceptTouchEvent(ev)
+    }
 
     /**
      * 处理触摸事件

@@ -28,10 +28,7 @@ import com.zion.remember.book.db.BookVo
 import com.zion.remember.db.AppDatabase
 import com.zion.remember.http.RManager
 import com.zion.remember.util.LogUtil
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.io.File
 import java.util.stream.Collectors
 
@@ -164,9 +161,9 @@ class BookFragment : Fragment() {
         }
         _binding?.localBookTv?.setOnClickListener {
 //            clearAllBook()
-            val r = RManager()
-            r.init()
-            r.getForumList()
+
+
+
         }
         _binding?.localBookRv?.run {
             adapter = bookAdapter

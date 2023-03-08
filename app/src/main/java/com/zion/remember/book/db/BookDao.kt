@@ -1,7 +1,6 @@
 package com.zion.remember.book.db
 
 import androidx.room.*
-import com.zion.remember.db.NoteInformation
 
 @Dao
 interface BookDao {

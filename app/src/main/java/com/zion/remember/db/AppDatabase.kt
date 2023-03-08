@@ -1,21 +1,36 @@
 package com.zion.remember.db
 
+import android.app.Application
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.zion.remember.BaseApplication
 
-@Database(entities = [NoteInformation::class], version = 1)
+@Database(
+    entities = [NoteInformationVo::class, WordsVo::class], version = 2
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
+    abstract fun wordsDao(): WordsDao
 
     companion object {
         @Volatile
         private var instance: AppDatabase? = null
-
-        fun getInstance(context: Context): AppDatabase {
+        //1升级到2 2升级到3， 1升级到3需要额外定义吗？
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE `words` (`word` TEXT NOT NULL, `wordExplain` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`word`))")
+            }
+        }
+        fun getInstance(context: Context ?= null): AppDatabase {
             return instance ?: synchronized(this) {
-                instance ?: Room.databaseBuilder(context, AppDatabase::class.java, "note").build()
+                instance ?: Room.databaseBuilder(BaseApplication.instance, AppDatabase::class.java, "note")
+                    .addMigrations(MIGRATION_1_2).build()
             }
         }
 

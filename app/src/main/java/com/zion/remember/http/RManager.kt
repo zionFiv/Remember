@@ -15,11 +15,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 
-class RManager {
+object RManager {
 
-    lateinit var retrofit: Retrofit
-      fun init() {
-        retrofit = Retrofit.Builder().baseUrl(FORUM_BASE_URL)
+    private val retrofit by lazy {
+        Retrofit.Builder().baseUrl(FORUM_BASE_URL)
             .client(getOkHttpClient())
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
@@ -32,19 +31,15 @@ class RManager {
             .connectTimeout(15, TimeUnit.SECONDS).build()
     }
 
-    public fun getForumList() {
-        retrofit.create(ForumService::class.java).getJokeRandomList().enqueue(
-            object : Callback<String> {
-                override fun onResponse(call: Call<String>, response: Response<String>) {
-
-                }
-
-                override fun onFailure(call: Call<String>, t: Throwable) {
-
-                }
-
-            }
+     fun getForumList(callback: Callback<BaseData<ForumData>>) {
+        retrofit.create(ForumService::class.java).getJokeList("1").enqueue(
+           callback
         )
+
+    }
+
+    fun getCityWeather(cityName : String, callback: Callback<BaseData<WeatherVo>>) {
+        retrofit.create(ForumService::class.java).getCityWeather(cityName).enqueue(callback)
     }
 
     public fun request() {

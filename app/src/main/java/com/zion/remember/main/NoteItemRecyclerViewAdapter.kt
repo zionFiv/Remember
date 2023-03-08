@@ -7,24 +7,24 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.zion.remember.databinding.ItemNoteBinding
 import com.zion.remember.db.AppDatabase
-import com.zion.remember.db.NoteInformation
+import com.zion.remember.db.NoteInformationVo
 import com.zion.remember.util.MobileUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
-class NoteItemRecyclerViewAdapter(private val values: MutableList<NoteInformation>) :
+class NoteItemRecyclerViewAdapter(private val values: MutableList<NoteInformationVo>) :
     RecyclerView.Adapter<NoteItemRecyclerViewAdapter.ViewHolder>() {
 
-    fun addHeadData(notes: List<NoteInformation>) {
-        values.addAll(0, notes)
-        notifyItemRangeInserted(0, notes.size)
+    fun addHeadData(noteVos: List<NoteInformationVo>) {
+        values.addAll(0, noteVos)
+        notifyItemRangeInserted(0, noteVos.size)
     }
 
-    fun addData(notes: List<NoteInformation>) {
+    fun addData(noteVos: List<NoteInformationVo>) {
         var befSize = values.size
-        values.addAll(notes)
+        values.addAll(noteVos)
         notifyItemInserted(befSize)
     }
 
@@ -68,7 +68,7 @@ class NoteItemRecyclerViewAdapter(private val values: MutableList<NoteInformatio
             }
             MobileUtil.hideSoftInput(it)
             var noteInfo =
-                NoteInformation(holder.dateTv.text.toString(), holder.contentEt.text.toString())
+                NoteInformationVo(holder.dateTv.text.toString(), holder.contentEt.text.toString())
             CoroutineScope(Dispatchers.Main).launch {
 
                 var job = CoroutineScope(Dispatchers.Default).async {
@@ -96,7 +96,7 @@ class NoteItemRecyclerViewAdapter(private val values: MutableList<NoteInformatio
         holder.deleteTv.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
                 var noteInfo =
-                    NoteInformation(holder.dateTv.text.toString(), holder.contentTv.text.toString())
+                    NoteInformationVo(holder.dateTv.text.toString(), holder.contentTv.text.toString())
                 var job = CoroutineScope(Dispatchers.Default).async {
 
                     AppDatabase.getInstance(holder.itemView.context).noteDao().deleteNote(noteInfo)

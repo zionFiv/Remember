@@ -36,6 +36,8 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <activity android:name=".game.NumberGameActivity"/>
+
+        <activity android:name=".word.WordsListActivity" android:windowSoftInputMode="adjustUnspecified"/>
     </application>
 
 </manifest>
