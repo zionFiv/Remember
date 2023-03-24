@@ -11,7 +11,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.zion.remember.BaseApplication
 
 @Database(
-    entities = [NoteInformationVo::class, WordsVo::class], version = 2
+    entities = [NoteInformationVo::class, WordsVo::class], version = 3
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
@@ -27,10 +27,16 @@ abstract class AppDatabase : RoomDatabase() {
                         "PRIMARY KEY(`word`))")
             }
         }
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE 'words' ADD COLUMN recordTime TEXT")
+                database.execSQL("ALTER TABLE 'words' ADD COLUMN percent INTEGER")
+            }
+        }
         fun getInstance(context: Context ?= null): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(BaseApplication.instance, AppDatabase::class.java, "note")
-                    .addMigrations(MIGRATION_1_2).build()
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
             }
         }
 

@@ -1,5 +1,7 @@
 package com.zion.remember.http
 
+import com.zion.remember.news.NewsDetailVo
+import com.zion.remember.news.NewsListVo
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -16,7 +18,7 @@ interface ForumService {
     @Headers("base_url:mxnzp")
     @GET("api/jokes/list")
     fun getJokeList(
-        @Query("page") id: String,
+        @Query("page") id: Int,
         @Query("app_id") app_id: String = MXN_APP_ID,
         @Query("app_secret") app_secret: String = MXN_APP_SECRET
     ): Call<BaseData<ForumData>>
@@ -29,4 +31,21 @@ interface ForumService {
         @Query("app_secret") app_secret: String = MXN_APP_SECRET
     ): Call<BaseData<WeatherVo>>
 
+    @Headers("base_url:mxnzp")
+    @GET("api/news/list")
+    fun getNewsList(
+        @Query("typeId") typeId: String,
+        @Query("page") page: Int,
+        @Query("app_id") app_id: String = MXN_APP_ID,
+        @Query("app_secret") app_secret: String = MXN_APP_SECRET
+    ): Call<BaseData<MutableList<NewsListVo>>>
+
+
+    @Headers("base_url:mxnzp")
+    @GET("api/news/details")
+    fun getNewsDetail(
+        @Query("newsId") id: String,
+        @Query("app_id") app_id: String = MXN_APP_ID,
+        @Query("app_secret") app_secret: String = MXN_APP_SECRET
+    ): Call<BaseData<NewsDetailVo>>
 }

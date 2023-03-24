@@ -14,8 +14,6 @@ object SpUtil {
         BaseApplication.instance.getSharedPreferences(SHARE_NAME, Context.MODE_PRIVATE)
     private val sharedEditor = sharedPreferences.edit()
 
-
-
     fun getString(key : String) : String{
         return sharedPreferences.getString(key, "").toString()
     }

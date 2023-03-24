@@ -4,22 +4,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/news_type_list"
+        android:layout_width="0dp"
+        android:layout_height="45dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/purple_500"/>
 
     <com.scwang.smart.refresh.layout.SmartRefreshLayout
-        android:id="@+id/words_refresh"
+        android:id="@+id/news_refresh"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/news_type_list">
 
         <com.scwang.smart.refresh.header.ClassicsHeader
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/words_list"
+            android:id="@+id/news_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
@@ -29,26 +37,5 @@
 
 
     </com.scwang.smart.refresh.layout.SmartRefreshLayout>
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/words_no_data"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="还没有背过的单词"
-        android:textSize="20sp"
-        android:textColor="@color/color_666666"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/word_add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@android:drawable/ic_input_add" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

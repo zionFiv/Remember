@@ -1,19 +1,20 @@
 package com.zion.remember.db
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
-interface WordsDao {
+interface
+WordsDao {
 
-    @Query("select * from words order by word desc ")
+    @Query("select * from words order by recordTime desc ")
     fun getAllWords() : MutableList<WordsVo>
 
-    @Query("select * from words order by word desc limit :page , :num")
+    @Query("select * from words order by recordTime   limit :page , :num")
     fun getWords(page : Int, num : Int) : MutableList<WordsVo>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveWord(word : WordsVo)
+
+    @Delete
+    fun deleteWord(word : WordsVo)
 }

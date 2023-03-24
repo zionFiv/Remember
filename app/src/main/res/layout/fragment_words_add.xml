@@ -38,7 +38,7 @@
                 android:id="@+id/word_add_ensure"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="确认"
+                android:text="添加"
                 android:layout_gravity="end"/>
 
         </LinearLayout>

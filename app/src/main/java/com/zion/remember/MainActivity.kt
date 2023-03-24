@@ -1,12 +1,16 @@
 package com.zion.remember
 
+import android.app.IntentService
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.work.WorkManager
 import com.dianping.logan.Logan
 import com.zion.remember.databinding.ActivityMainBinding
 import com.zion.remember.game.NumberGameActivity
@@ -79,6 +83,16 @@ class MainActivity : AppCompatActivity() {
     override fun onRestart() {
         super.onRestart()
         Log.w("onRestart", "onRestart")
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        Log.w("onRestart", "onRestoreInstanceState")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.w("onRestart", "onSaveInstanceState")
     }
 
 }

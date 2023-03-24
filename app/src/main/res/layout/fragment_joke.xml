@@ -89,6 +89,44 @@
 
     </androidx.cardview.widget.CardView>
 
+    <androidx.cardview.widget.CardView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="15dp"
+        android:padding="10dp"
+        app:cardCornerRadius="4dp"
+        app:layout_constraintStart_toEndOf="@id/word_card"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/joke_card"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/news_enter"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:textSize="16dp"
+                android:textColor="@color/color_666666"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="新闻"/>
+            <TextView
+                android:id="@+id/sudo_enter"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:textSize="16dp"
+                android:textColor="@color/color_666666"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="数独"
+                android:layout_marginTop="10dp"/>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/line1"
         android:layout_width="1dp"

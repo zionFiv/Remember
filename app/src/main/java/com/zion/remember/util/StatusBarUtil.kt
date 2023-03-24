@@ -1,9 +1,10 @@
 package com.zion.remember.util
 
-import android.util.Log
+import android.app.Activity
 import android.view.View
+import android.view.WindowManager
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
@@ -17,13 +18,29 @@ object StatusBarUtil {
         return 10
     }
 
-    fun setStatusBarBg() {
+    fun setStatusBarBg(activity : Activity, color : Int, isLight : Boolean = false) {
+        activity.window.apply {
+            clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            statusBarColor =  ContextCompat.getColor(activity, color)
+            var ui = decorView.systemUiVisibility
 
+            if (isLight) {
+                ui = ui or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            } else {
+                ui = ui and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            }
+            decorView.setSystemUiVisibility(ui);
+
+        }
     }
+
+
 
     fun hideStatusBar(view : View){
 
-        ViewCompat.getWindowInsetsController(view)?.apply{
+        ViewCompat.getWindowInsetsController(view)?.apply {
+
             hide(WindowInsetsCompat.Type.systemBars())
             isAppearanceLightNavigationBars =false
             isAppearanceLightStatusBars = false

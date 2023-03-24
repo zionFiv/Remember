@@ -24,7 +24,7 @@ class WheelPickView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
     private val mPaint = Paint()
-    private val textSize = MobileUtil.sp2px(24.0f)
+    private val textSize = MobileUtil.sp2px(16.0f)
     private var mTouchY = 0 //当前触摸点
     private var mScroller: Scroller
     private var mTracker: VelocityTracker? = null

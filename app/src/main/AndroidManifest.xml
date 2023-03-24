@@ -11,6 +11,7 @@
         android:icon="@drawable/icon_re"
         android:label="@string/app_name"
         android:roundIcon="@drawable/icon_re"
+        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.Remember">
         <activity
@@ -38,6 +39,9 @@
         <activity android:name=".game.NumberGameActivity"/>
 
         <activity android:name=".word.WordsListActivity" android:windowSoftInputMode="adjustUnspecified"/>
+        <activity android:name=".joke.JokeListActivity"/>
+        <activity android:name=".news.NewsListActivity" android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <activity android:name=".news.NewsDetailPageActivity" android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     </application>
 
 </manifest>

@@ -10,35 +10,45 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zion.remember.R
 import com.zion.remember.databinding.FragmentJokeBinding
+import com.zion.remember.db.WordsVo
+import com.zion.remember.game.NumberGameActivity
 import com.zion.remember.http.RManager
+import com.zion.remember.joke.JokeListActivity
+import com.zion.remember.news.NewsListActivity
 import com.zion.remember.word.WordsListActivity
 
 class JokeFragment : Fragment() {
-    private var _jokeBinding : FragmentJokeBinding?= null
-    private lateinit var viewModel : JokeViewModel
+    private var _jokeBinding: FragmentJokeBinding? = null
+    private lateinit var viewModel: JokeViewModel
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _jokeBinding =  FragmentJokeBinding.inflate(inflater, container, false)
+        _jokeBinding = FragmentJokeBinding.inflate(inflater, container, false)
         return _jokeBinding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this).get(JokeViewModel::class.java)
-        viewModel.getJoke().observe(viewLifecycleOwner){
+        viewModel.getJoke().observe(viewLifecycleOwner) {
             _jokeBinding?.jokeTxt?.text = it.list[0].content
         }
+
         viewModel.getCityWeather("南昌市").observe(viewLifecycleOwner) {
             _jokeBinding?.weatherSituation?.text = it.weather
         }
 
-        viewModel.getWords().observe(viewLifecycleOwner){
+        viewModel.getWords().observe(viewLifecycleOwner) {
             var items = mutableListOf<String>()
             it?.forEach { vo ->
                 items.add(vo.word + " : " + vo.wordExplain)
+            }
+            if (items.isEmpty()) {
+
+                items.add("暂无单词")
+
             }
             _jokeBinding?.wheelView?.setDatas(items)
         }
@@ -46,9 +56,21 @@ class JokeFragment : Fragment() {
         _jokeBinding?.wheelMore?.apply {
             text = "更多"
             setOnClickListener {
-                startActivity(Intent( activity, WordsListActivity::class.java))
+                startActivity(Intent(activity, WordsListActivity::class.java))
             }
 
+        }
+        _jokeBinding?.jokeTxt?.setOnClickListener {
+
+            startActivity(Intent(activity, JokeListActivity::class.java))
+
+        }
+        _jokeBinding?.newsEnter?.setOnClickListener {
+            startActivity(Intent(activity, NewsListActivity::class.java))
+        }
+
+        _jokeBinding?.sudoEnter?.setOnClickListener {
+            startActivity(Intent(activity, NumberGameActivity::class.java))
         }
 
     }

@@ -4,6 +4,7 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -11,8 +12,12 @@ import com.zion.remember.R
 import com.zion.remember.adapter.RVHolder
 import com.zion.remember.adapter.RvAdapter
 import com.zion.remember.databinding.ActivityWordsListBinding
+import com.zion.remember.db.AppDatabase
 import com.zion.remember.db.WordsVo
 import com.zion.remember.util.MobileUtil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /*
  * ActivityWordsListBinding原理
@@ -54,13 +59,16 @@ class WordsListActivity : AppCompatActivity() {
 
         binding.wordAdd.setOnClickListener {
 
-            WordsAddDialogFragment().show(supportFragmentManager, "add_word")
+            WordsAddDialogFragment()
+                .show(supportFragmentManager, "add_word")
         }
 
         binding.wordsRefresh.setEnableRefresh(false)
         binding.wordsRefresh.setOnLoadMoreListener {
-            page++
-            model.getWords(page).observe(this@WordsListActivity){
+            model.getWords(page +1).observe(this@WordsListActivity){
+                if(it.isNotEmpty()) {
+                    page++
+                }
                 adapter.addAll(it)
 
             }
@@ -70,7 +78,9 @@ class WordsListActivity : AppCompatActivity() {
 
         model.getWords(page).observe(this@WordsListActivity){
             adapter.replaceAll(it)
-
+            if(it.isNotEmpty()) {
+                binding.wordsNoData.isVisible = false
+            }
         }
 
 

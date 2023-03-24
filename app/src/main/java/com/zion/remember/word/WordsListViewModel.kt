@@ -22,7 +22,7 @@ class WordsListViewModel(application: Application) : AndroidViewModel(applicatio
         var data = MutableLiveData<MutableList<WordsVo>>()
 
         CoroutineScope(Dispatchers.Default).launch {
-            val vo = AppDatabase.getInstance(getApplication()).wordsDao().getWords(page, 10)
+            val vo = AppDatabase.getInstance(getApplication()).wordsDao().getWords(page *10, page *10 + 10)
             data.postValue(vo)
         }
 

@@ -15,6 +15,8 @@ import com.zion.remember.db.WordsVo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class WordsAddDialogFragment : DialogFragment() {
 
@@ -55,7 +57,9 @@ class WordsAddDialogFragment : DialogFragment() {
                     return@launch
                 }
 
-                val vo = WordsVo(titleStr.toString(), explainStr.toString())
+               var recordTime =  SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().time)
+
+                val vo = WordsVo(titleStr.toString(), explainStr.toString(), recordTime, 50)
                 //如何确认save成功
                 activity?.application?.let { it1 ->
                     AppDatabase.getInstance(it1).wordsDao().saveWord(vo)

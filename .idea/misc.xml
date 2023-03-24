@@ -12,20 +12,31 @@
         <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_book_reading.xml" value="0.24050632911392406" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_item_detail.xml" value="0.10208333333333333" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_item_detail_test.xml" value="0.1" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_joke_list.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_main.xml" value="0.27134146341463417" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_news_detail_page.xml" value="0.16927083333333334" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_news_list.xml" value="0.1" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/activity_words_list.xml" value="0.14666666666666667" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/blank_fragment.xml" value="0.12916666666666668" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_book.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_game.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_game_list.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_item_detail.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_item_list.xml" value="0.3333333333333333" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_joke.xml" value="0.14666666666666667" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_note.xml" value="0.12916666666666668" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_vedio.xml" value="0.10833333333333334" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_vedio_list.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_video.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_video_list.xml" value="0.1" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/fragment_words_add.xml" value="0.17916666666666667" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/item_book.xml" value="0.12291666666666666" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/item_book_local_rv.xml" value="0.1" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/item_joke.xml" value="0.10833333333333334" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/item_list_content.xml" value="0.1" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/item_news_list.xml" value="0.1" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/item_news_list_type.xml" value="0.10520833333333333" />
+        <entry key="..\:/Code/Remember/app/src/main/res/layout/item_words.xml" value="0.1" />
         <entry key="..\:/Code/Remember/app/src/main/res/layout/layout.xml" value="0.11458333333333333" />
         <entry key="..\:/Code/Remember/app/src/main/res/xml/root_preferences.xml" value="0.1" />
       </map>
