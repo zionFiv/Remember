@@ -1,0 +1,40 @@
+pipeline:
+  name: test
+  identifier: test
+  projectIdentifier: zenniappandroid
+  orgIdentifier: default
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: test
+        build: <+input>
+  stages:
+    - stage:
+        name: build
+        identifier: build
+        type: CI
+        spec:
+          cloneCodebase: true
+          platform:
+            os: Linux
+            arch: Arm64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Test
+                  identifier: test
+                  spec:
+                    shell: Sh
+                    command: |-
+                      ./gradlew test assemble -YOUR_PROJECT
+                      ./gradlew testDebug
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - "*/build/test-results/.*xml"
