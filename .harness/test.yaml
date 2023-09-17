@@ -14,6 +14,12 @@ pipeline:
         name: build
         identifier: build
         type: CI
+        strategy:
+          matrix:
+            androidVersion:
+              - 30
+              - 31
+              - 33
         spec:
           cloneCodebase: true
           platform:
@@ -24,6 +30,17 @@ pipeline:
             spec: {}
           execution:
             steps:
+              - step:
+                  type: Run
+                  name: android Version
+                  identifier: android_version
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: fabernovel/android:api-<+ stage.matrix.androidVersion >-v1.7.0
+                    shell: Sh
+                    command: |-
+                      fastlane init
+                      fastlane tests
               - step:
                   type: Run
                   identifier: dependencies
