@@ -30,9 +30,7 @@ pipeline:
                   identifier: test
                   spec:
                     shell: Sh
-                    command: |-
-
-                      ./gradlew assembleDebug
+                    command: ./gradlew assembleDebug
                     reports:
                       type: JUnit
                       spec:
