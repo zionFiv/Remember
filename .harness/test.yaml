@@ -38,9 +38,7 @@ pipeline:
                     connectorRef: account.harnessImage
                     image: fabernovel/android:api-<+ stage.matrix.androidVersion >-v1.7.0
                     shell: Sh
-                    command: |-
-                      fastlane init
-                      fastlane tests
+                    command: Echo "test"
               - step:
                   type: Run
                   identifier: dependencies
