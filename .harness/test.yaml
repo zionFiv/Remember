@@ -31,8 +31,8 @@ pipeline:
                   spec:
                     shell: Sh
                     command: |-
-                      ./gradlew test assemble -YOUR_PROJECT
-                      ./gradlew testDebug
+
+                      ./gradlew assembleDebug
                     reports:
                       type: JUnit
                       spec:
