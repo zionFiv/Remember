@@ -26,6 +26,13 @@ pipeline:
             steps:
               - step:
                   type: Run
+                  identifier: dependencies
+                  name: dependencies
+                  spec:
+                    shell: Sh
+                    command: bundle update
+              - step:
+                  type: Run
                   name: Test
                   identifier: test
                   spec:
