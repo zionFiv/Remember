@@ -45,7 +45,7 @@ pipeline:
                   name: dependencies
                   spec:
                     shell: Sh
-                    command: bundle update
+                    command: echo "Welcome to Harness CI 2"
               - step:
                   type: Run
                   name: Test
