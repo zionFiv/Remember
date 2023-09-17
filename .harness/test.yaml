@@ -38,7 +38,7 @@ pipeline:
                     connectorRef: account.harnessImage
                     image: fabernovel/android:api-<+ stage.matrix.androidVersion >-v1.7.0
                     shell: Sh
-                    command: Echo "test"
+                    command: echo "Welcome to Harness CI"
               - step:
                   type: Run
                   identifier: dependencies
